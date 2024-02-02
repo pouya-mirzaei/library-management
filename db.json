@@ -1,0 +1,29 @@
+{
+    "users": [
+        {
+            "id": 0,
+            "role": "ADMIN",
+            "name": "pouya",
+            "username": "meraxes",
+            "password": "123456",
+            "fined": 0
+        },
+        {
+            "id": 1,
+            "role": "USER",
+            "name": "ali",
+            "username": "ali006",
+            "password": "1111",
+            "fined": 0
+        }
+    ],
+    "books": [
+        {
+            "id": 0,
+            "name": "Fire and blood",
+            "author": "G.R.R.M",
+            "price": 230000,
+            "isBooked": 1
+        }
+    ]
+}
