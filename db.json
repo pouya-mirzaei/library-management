@@ -18,12 +18,14 @@
         }
     ],
     "books": [
+        { "id": 0, "name": "Fire and blood", "author": "G.R.R.M", "price": 7.99, "isBooked": 1 },
         {
-            "id": 0,
-            "name": "Fire and blood",
-            "author": "G.R.R.M",
-            "price": 230000,
-            "isBooked": 1
+            "id": 1,
+            "name": "Big panda and tiny dragon",
+            "author": "James Norbury",
+            "price": 4.99,
+            "isBooked": 0
         }
-    ]
+    ],
+    "a": [1, 2, 1]
 }

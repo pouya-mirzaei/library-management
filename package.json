@@ -1,12 +1,13 @@
 {
-  "name": "library",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "pouya",
-  "license": "ISC"
+    "name": "library",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "node server.js"
+    },
+    "keywords": [],
+    "author": "pouya",
+    "license": "ISC"
 }
