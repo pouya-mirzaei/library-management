@@ -26,20 +26,38 @@ const server = http.createServer((req, res) => {
             res.end();
         });
     } else if (method === "DELETE" && pathname === "/api/books") {
-        console.log("here");
         deleteBook(fullUrl.searchParams.get("id"))
             .then((response) => {
-                console.log(response);
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.write(JSON.stringify(response));
                 res.end();
             })
             .catch((err) => {
-                console.log(err);
                 res.writeHead(404, { "Content-Type": "application/json" });
                 res.write(JSON.stringify(err));
                 res.end();
             });
+    } else if (method === "POST" && reqUrl === "/api/books") {
+        let body = "";
+        req.on("data", (chunk) => {
+            body += chunk;
+        });
+        req.on("end", () => {
+            let { name, author, price } = JSON.parse(body);
+            addBook(name, price, author)
+                .then((respond) => {
+                    console.log(respond);
+                    res.writeHead(201, { "Content-Type": "application/json" });
+                    res.write(JSON.stringify(respond));
+                    res.end();
+                })
+                .catch((err) => {
+                    console.log(err);
+                    res.writeHead(500, { "Content-Type": "application/json" });
+                    res.write(JSON.stringify(err));
+                    res.end();
+                });
+        });
     } else {
         res.writeHead(404, { "Content-Type": "application/json" });
         res.write(JSON.stringify({ message: "This api does not exists :(" }));
@@ -77,6 +95,30 @@ function deleteBook(bookId) {
                         });
                     resolve(filteredBooks);
                 });
+            });
+        });
+    });
+}
+
+function addBook(name, price, author) {
+    return new Promise((resolve, reject) => {
+        if (!name || (!price && price !== 0) || !author) reject({ message: "Invalid inputs" });
+
+        let newBook = {
+            id: crypto.randomUUID(),
+            name,
+            price,
+            author,
+            isBooked: 0,
+        };
+        readFile(dbPath, (err, data) => {
+            if (err) reject({ message: "An error occurred while fetching data from the database" });
+            let newData = JSON.parse(data);
+            newData.books.push(newBook);
+            writeFile(dbPath, JSON.stringify(newData), (err) => {
+                if (err)
+                    reject({ message: "An error occurred while adding the book to the database" });
+                resolve({ message: "The book has been added to the database successfully" });
             });
         });
     });

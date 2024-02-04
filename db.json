@@ -25,6 +25,20 @@
             "author": "James Norbury",
             "price": 4.99,
             "isBooked": 0
+        },
+        {
+            "id": "0e87f9eb-e748-4def-b363-f7003a6d6439",
+            "name": "a song if ice and fire",
+            "price": 29.23121231,
+            "author": "G.R.R.M",
+            "isBooked": 0
+        },
+        {
+            "id": "e40c0f79-7c4b-4841-ac32-603f29af5728",
+            "name": "The boy, the mole, the horse ,the fox",
+            "price": 5.9,
+            "author": "IDK",
+            "isBooked": 0
         }
     ]
 }

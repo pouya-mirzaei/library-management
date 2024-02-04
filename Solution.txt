@@ -1,5 +1,5 @@
 User (Entity)
-    1. User -> Register, Login, Reserve, Logout, ReturnBook, GetAllBook
+    1. User -> Register, Login, Booking, Logout, ReturnBook, GetAllBook
     2. Admin -> Fine, MakeAdmin, AddBook, removeBook, EditBook, GetAllBook
 
 
