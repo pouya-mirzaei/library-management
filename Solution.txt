@@ -1,6 +1,6 @@
 User (Entity)
-    1. User -> Register, Login, Reserve, Logout, Tahvil, GetAllBook
-    2. Admin -> Crime, MakeAdmin, AddBook, removeBook, EditBook, GetAllBook
+    1. User -> Register, Login, Reserve, Logout, ReturnBook, GetAllBook
+    2. Admin -> Fine, MakeAdmin, AddBook, removeBook, EditBook, GetAllBook
 
 
 Book 
