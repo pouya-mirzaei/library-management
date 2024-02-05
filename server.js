@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
     let { pathname } = fullUrl;
 
     if (method === "GET" && reqUrl === "/api/books") {
-        readFile("dbPath", (err, data) => {
+        readFile(dbPath, (err, data) => {
             if (err) throw err;
             data = JSON.parse(data);
             res.writeHead(200, { "Content-type": "application/json" });
@@ -18,7 +18,7 @@ const server = http.createServer((req, res) => {
             res.end();
         });
     } else if (method === "GET" && reqUrl === "/api/users") {
-        readFile("dbPath", (err, data) => {
+        readFile(dbPath, (err, data) => {
             if (err) throw err;
             data = JSON.parse(data);
             res.writeHead(200, { "Content-type": "application/json" });
@@ -46,13 +46,11 @@ const server = http.createServer((req, res) => {
             let { name, author, price } = JSON.parse(body);
             addBook(name, price, author)
                 .then((respond) => {
-                    console.log(respond);
                     res.writeHead(201, { "Content-Type": "application/json" });
                     res.write(JSON.stringify(respond));
                     res.end();
                 })
                 .catch((err) => {
-                    console.log(err);
                     res.writeHead(500, { "Content-Type": "application/json" });
                     res.write(JSON.stringify(err));
                     res.end();
