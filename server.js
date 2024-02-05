@@ -100,8 +100,10 @@ server.listen(3001, () => {
 
 function deleteBook(bookId) {
     return new Promise((resolve, reject) => {
-        if (!bookId) reject({ message: "You should pass an Id" });
-
+        if (!bookId) {
+            reject({ message: "You should pass an Id" });
+            return;
+        }
         readFile(dbPath, (err, data) => {
             if (err) {
                 reject(err);
@@ -112,18 +114,17 @@ function deleteBook(bookId) {
             let filteredBooks = books.filter((book) => book.id != bookId);
 
             if (books.length === filteredBooks.length) {
-                return new Promise((res, rej) => {
-                    reject({ message: "The book with the provided id could not be found" });
-                });
+                reject({ message: "The book with the provided id could not be found" });
+                return;
             }
             writeFile(dbPath, JSON.stringify({ ...data, books: filteredBooks }), (err) => {
-                return new Promise((res, rej) => {
-                    if (err)
-                        reject({
-                            message: "There was an error while deleting the book :( try again",
-                        });
-                    resolve({ message: "Deleted :)" });
-                });
+                if (err) {
+                    reject({
+                        message: "There was an error while deleting the book :( try again",
+                    });
+                    return;
+                }
+                resolve({ message: "Deleted :)" });
             });
         });
     });
@@ -132,8 +133,10 @@ function deleteBook(bookId) {
 function addBook(bookData) {
     let { name, price, author } = bookData;
     return new Promise((resolve, reject) => {
-        if (!name || (!price && price !== 0) || !author) reject({ message: "Invalid inputs" });
-
+        if (!name || (!price && price !== 0) || !author) {
+            reject({ message: "Invalid inputs" });
+            return;
+        }
         let newBook = {
             id: crypto.randomUUID(),
             name,
@@ -142,13 +145,18 @@ function addBook(bookData) {
             isBooked: 0,
         };
         readFile(dbPath, (err, data) => {
-            if (err) reject({ message: "An error occurred while fetching data from the database" });
+            if (err) {
+                reject({ message: "An error occurred while fetching data from the database" });
+                return;
+            }
             let newData = JSON.parse(data);
             if (!newData.books) newData.books = [];
             newData.books.push(newBook);
             writeFile(dbPath, JSON.stringify(newData), (err) => {
-                if (err)
+                if (err) {
                     reject({ message: "An error occurred while adding the book to the database" });
+                    return;
+                }
                 resolve({ message: "The book has been added to the database successfully" });
             });
         });
