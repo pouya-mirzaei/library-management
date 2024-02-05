@@ -1,1 +1,36 @@
-{"users":[{"id":0,"role":"ADMIN","name":"pouya","username":"meraxes","password":"123456","fined":0},{"id":1,"role":"USER","name":"ali","username":"ali006","password":"1111","fined":0}],"books":[{"id":"bbdcc4e4-b4f2-4a38-ad8a-eed9e15a56f8","name":"Fire and blood","author":"G.R.R.M","price":7.99,"isBooked":1},{"id":"cda55b14-baac-4017-a6f0-8ab10f0b5bd7","name":"The boy, the mole, the horse ,the fox","price":5.9,"author":"IDK","isBooked":0},{"id":"ac321fd1-9ec5-4d96-b31f-c4fdfce692eb","name":"A song if ince and fire","price":20,"author":"G.R.R.M","isBooked":0}]}
+{
+    "users": [
+        {
+            "id": 0,
+            "role": "ADMIN",
+            "name": "pouya",
+            "username": "meraxes",
+            "password": "123456",
+            "fined": 0
+        },
+        {
+            "id": 1,
+            "role": "USER",
+            "name": "ali",
+            "username": "ali006",
+            "password": "1111",
+            "fined": 0
+        }
+    ],
+    "books": [
+        {
+            "id": "f431da3c-041e-43d3-bad1-b75335edc846",
+            "name": "Fire and Blood",
+            "price": 10,
+            "author": "G.R.R.M",
+            "isBooked": 0
+        },
+        {
+            "id": "046f7a2b-42ef-4a23-9ae4-9e059e1f04d8",
+            "name": "Fire and Blood",
+            "price": 0,
+            "author": "G.R.R.M",
+            "isBooked": 0
+        }
+    ]
+}

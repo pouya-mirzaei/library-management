@@ -1,5 +1,4 @@
 const http = require("http");
-const url = require("url");
 const { readFile, writeFile } = require("fs");
 
 const dbPath = "./db.json";
@@ -43,8 +42,13 @@ const server = http.createServer((req, res) => {
             body += chunk;
         });
         req.on("end", () => {
-            let { name, author, price } = JSON.parse(body);
-            addBook(name, price, author)
+            if (!body) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ message: "give me some data bitch" }));
+                return;
+            }
+            let data = JSON.parse(body);
+            addBook(data)
                 .then((respond) => {
                     res.writeHead(201, { "Content-Type": "application/json" });
                     res.write(JSON.stringify(respond));
@@ -52,6 +56,33 @@ const server = http.createServer((req, res) => {
                 })
                 .catch((err) => {
                     res.writeHead(500, { "Content-Type": "application/json" });
+                    res.write(JSON.stringify(err));
+                    res.end();
+                });
+        });
+    } else if (method === "PUT" && pathname === "/api/books") {
+        let body = "";
+
+        req.on("data", (chunk) => {
+            body += chunk;
+        });
+
+        req.on("end", () => {
+            if (!body) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ message: "give me some data bitch" }));
+                return;
+            }
+            let data = JSON.parse(body);
+            let id = fullUrl.searchParams.get("id");
+            editBook(id, data)
+                .then((response) => {
+                    res.writeHead(202, { "Content-Type": "application/json" });
+                    res.write(JSON.stringify(response));
+                    res.end();
+                })
+                .catch((err) => {
+                    res.writeHead(504, { "Content-Type": "application/json" });
                     res.write(JSON.stringify(err));
                     res.end();
                 });
@@ -85,20 +116,21 @@ function deleteBook(bookId) {
                     reject({ message: "The book with the provided id could not be found" });
                 });
             }
-            writeFile(dbPath, JSON.stringify({ ...data, filteredBooks }), (err) => {
+            writeFile(dbPath, JSON.stringify({ ...data, books: filteredBooks }), (err) => {
                 return new Promise((res, rej) => {
                     if (err)
                         reject({
                             message: "There was an error while deleting the book :( try again",
                         });
-                    resolve(filteredBooks);
+                    resolve({ message: "Deleted :)" });
                 });
             });
         });
     });
 }
 
-function addBook(name, price, author) {
+function addBook(bookData) {
+    let { name, price, author } = bookData;
     return new Promise((resolve, reject) => {
         if (!name || (!price && price !== 0) || !author) reject({ message: "Invalid inputs" });
 
@@ -112,11 +144,51 @@ function addBook(name, price, author) {
         readFile(dbPath, (err, data) => {
             if (err) reject({ message: "An error occurred while fetching data from the database" });
             let newData = JSON.parse(data);
+            if (!newData.books) newData.books = [];
             newData.books.push(newBook);
             writeFile(dbPath, JSON.stringify(newData), (err) => {
                 if (err)
                     reject({ message: "An error occurred while adding the book to the database" });
                 resolve({ message: "The book has been added to the database successfully" });
+            });
+        });
+    });
+}
+
+function editBook(id, newData) {
+    let { name, price, author } = newData;
+    return new Promise((resolve, reject) => {
+        if (!name && !price && price !== 0 && !author) {
+            reject({ message: "Invalid inputs" });
+            return;
+        }
+
+        readFile(dbPath, (err, data) => {
+            if (err) {
+                reject({ message: "An error occurred while fetching data from the database" });
+                return;
+            }
+
+            let db = JSON.parse(data);
+            let index = db.books.findIndex((item) => item.id === id);
+
+            if (index == -1) {
+                reject({ message: "There is no such a book with the provided id" });
+                return;
+            }
+
+            name = name ? name : db.books[index].name;
+            price = price || price == 0 ? price : db.books[index].price;
+            author = author ? author : db.books[index].author;
+
+            db.books[index] = { ...db.books[index], name, price, author };
+
+            writeFile(dbPath, JSON.stringify(db), (err) => {
+                if (err) {
+                    reject({ message: "An error occurred while editing the book" });
+                    return;
+                }
+                resolve({ message: "The book has been edited successfully" });
             });
         });
     });
