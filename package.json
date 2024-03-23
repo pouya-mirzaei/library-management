@@ -11,6 +11,8 @@
     "author": "pouya",
     "license": "ISC",
     "dependencies": {
-        "mongodb": "^6.3.0"
+        "dotenv": "^16.4.4",
+        "mongodb": "^6.3.0",
+        "nodemon": "^3.1.0"
     }
 }

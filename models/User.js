@@ -1,6 +1,7 @@
 const { readFile, writeFile } = require("fs");
+require("dotenv").config();
 
-const dbPath = "./db.json";
+const dbPath = process.env.dbPath;
 
 const getAllUsers = () => {
     return new Promise((resolve, reject) => {

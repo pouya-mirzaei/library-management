@@ -2,6 +2,9 @@ const http = require("http");
 const { readFile, writeFile } = require("fs");
 const { returnAllBooks, deleteBooks, addBookToDb } = require("./controllers/bookController");
 const { returnAllUsers } = require("./controllers/userController");
+require("dotenv").config();
+
+const PORT = process.env.PORT || 3000;
 
 const dbPath = "./db.json";
 
@@ -11,6 +14,7 @@ const server = http.createServer((req, res) => {
     let { pathname } = fullUrl;
 
     if (method === "GET" && reqUrl === "/api/books") {
+        console.log("get request ");
         returnAllBooks(req, res);
     } else if (method === "GET" && reqUrl === "/api/users") {
         returnAllUsers(req, res);
@@ -74,10 +78,6 @@ const server = http.createServer((req, res) => {
         res.write(JSON.stringify({ message: "This api does not exists :(" }));
         res.end();
     }
-});
-
-server.listen(3001, () => {
-    console.log("Server is running on port 3001 ...");
 });
 
 function editBook(id, newData) {
@@ -164,3 +164,7 @@ function registerUser(userInfo) {
         });
     });
 }
+
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT} ...`);
+});
