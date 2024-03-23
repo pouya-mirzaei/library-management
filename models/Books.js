@@ -62,6 +62,7 @@ const addBook = (bookData) => {
             author: author.toString(),
             isBooked: 0,
         };
+        console.log(dbPath);
         readFile(dbPath, (err, data) => {
             if (err) {
                 reject({ message: "An error occurred while fetching data from the database" });
@@ -81,8 +82,49 @@ const addBook = (bookData) => {
     });
 };
 
+const editBook = (id, newData) => {
+    let { name, price, author } = newData;
+    return new Promise((resolve, reject) => {
+        if (!name && !price && price !== 0 && !author) {
+            reject({ message: "Invalid inputs" });
+            return;
+        }
+
+        readFile(dbPath, (err, data) => {
+            if (err) {
+                reject({ message: "An error occurred while fetching data from the database" });
+                return;
+            }
+
+            let db = JSON.parse(data);
+            console.log(db);
+            let index = db.books.findIndex((item) => item.id === id);
+
+            if (index == -1) {
+                reject({ message: "There is no such a book with the provided id" });
+                return;
+            }
+
+            name = name ? name : db.books[index].name;
+            price = price || price == 0 ? price : db.books[index].price;
+            author = author ? author : db.books[index].author;
+
+            db.books[index] = { ...db.books[index], name, price, author };
+
+            writeFile(dbPath, JSON.stringify(db), (err) => {
+                if (err) {
+                    reject({ message: "An error occurred while editing the book" });
+                    return;
+                }
+                resolve({ message: "The book has been edited successfully" });
+            });
+        });
+    });
+};
+
 module.exports = {
     getAllBooks,
     deleteBook,
     addBook,
+    editBook,
 };

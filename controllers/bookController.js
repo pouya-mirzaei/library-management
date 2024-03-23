@@ -1,4 +1,4 @@
-const { getAllBooks, deleteBook, addBook } = require("../models/Books");
+const { getAllBooks, deleteBook, addBook, editBook } = require("../models/Books");
 
 const returnAllBooks = async (req, res) => {
     const books = await getAllBooks();
@@ -50,8 +50,40 @@ const addBookToDb = (req, res) => {
     });
 };
 
+const editController = (req, res) => {
+    let { url: reqUrl } = req;
+    let fullUrl = new URL(reqUrl, `http://localhost:${process.env.PORT}`);
+    let body = "";
+
+    req.on("data", (chunk) => {
+        body += chunk;
+    });
+
+    req.on("end", () => {
+        if (!body) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "give me some data bitch" }));
+            return;
+        }
+        let data = JSON.parse(body);
+        let id = fullUrl.searchParams.get("id");
+        editBook(id, data)
+            .then((response) => {
+                res.writeHead(202, { "Content-Type": "application/json" });
+                res.write(JSON.stringify(response));
+                res.end();
+            })
+            .catch((err) => {
+                res.writeHead(504, { "Content-Type": "application/json" });
+                res.write(JSON.stringify(err));
+                res.end();
+            });
+    });
+};
+
 module.exports = {
     returnAllBooks,
     deleteBooks,
     addBookToDb,
+    editController,
 };
