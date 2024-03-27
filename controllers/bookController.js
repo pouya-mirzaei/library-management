@@ -1,3 +1,4 @@
+const { Long } = require("mongodb");
 const { getAllBooks, deleteBook, addBook, editBook } = require("../models/Books");
 
 const returnAllBooks = async (req, res) => {
@@ -8,20 +9,13 @@ const returnAllBooks = async (req, res) => {
     res.end();
 };
 
-const deleteBooks = (req, res) => {
+const deleteBooks = async (req, res) => {
     let fullUrl = new URL(req.url, "http://localhost:3001");
 
-    deleteBook(fullUrl.searchParams.get("id"))
-        .then((response) => {
-            res.writeHead(200, { "Content-Type": "application/json" });
-            res.write(JSON.stringify(response));
-            res.end();
-        })
-        .catch((err) => {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            res.write(JSON.stringify(err));
-            res.end();
-        });
+    const deleteResult = await deleteBook(fullUrl.searchParams.get("id"));
+    res.writeHead(deleteResult.code, { "Content-Type": "application/json" });
+    res.write(JSON.stringify(deleteResult));
+    res.end();
 };
 
 const addBookToDb = (req, res) => {
@@ -29,24 +23,18 @@ const addBookToDb = (req, res) => {
     req.on("data", (chunk) => {
         body += chunk;
     });
-    req.on("end", () => {
+    req.on("end", async () => {
         if (!body) {
             res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "give me some data bitch" }));
+            res.end(JSON.stringify({ message: "give me some data bitch", isOk: false, code: 400 }));
             return;
         }
         let data = JSON.parse(body);
-        addBook(data)
-            .then((respond) => {
-                res.writeHead(201, { "Content-Type": "application/json" });
-                res.write(JSON.stringify(respond));
-                res.end();
-            })
-            .catch((err) => {
-                res.writeHead(500, { "Content-Type": "application/json" });
-                res.write(JSON.stringify(err));
-                res.end();
-            });
+        const result = await addBook(data);
+
+        res.writeHead(result.code, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(result));
+        res.end();
     });
 };
 

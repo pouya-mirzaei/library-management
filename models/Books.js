@@ -1,85 +1,77 @@
 const { readFile, writeFile } = require("fs");
+const { db: dbConnection } = require("../configs/db");
 
 require("dotenv").config();
 
 const dbPath = process.env.dbPath;
 
-const getAllBooks = () => {
-    return new Promise((resolve, reject) => {
-        readFile("./db.json", (err, data) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(JSON.parse(data).books);
-        });
-    });
+const getAllBooks = async () => {
+    const db = await dbConnection();
+    return db.collection("books").find({}).toArray();
 };
-const deleteBook = (bookId) => {
-    return new Promise((resolve, reject) => {
-        if (!bookId) {
-            reject({ message: "You should pass an Id" });
-            return;
-        }
-        readFile(dbPath, (err, data) => {
-            console.log("here");
-            if (err) {
-                reject(err);
-            }
-            data = JSON.parse(data);
-            let { books } = data;
+const deleteBook = async (bookId) => {
+    if (!bookId) {
+        return { message: "You should pass an Id", isOk: false, code: 400 };
+    }
 
-            let filteredBooks = books.filter((book) => book.id != bookId);
+    let books = await getAllBooks();
 
-            if (books.length === filteredBooks.length) {
-                reject({ message: "The book with the provided id could not be found" });
-                return;
-            }
-            writeFile(dbPath, JSON.stringify({ ...data, books: filteredBooks }), (err) => {
-                if (err) {
-                    reject({
-                        message: "There was an error while deleting the book :( try again",
-                    });
-                    return;
-                }
-                resolve({ message: "Deleted :)" });
-            });
-        });
-    });
-};
+    let bookIndex = books.findIndex((book) => book.id == bookId);
 
-const addBook = (bookData) => {
-    let { name, price, author } = bookData;
-    return new Promise((resolve, reject) => {
-        if (!name || (!price && price !== 0) || !author) {
-            reject({ message: "Invalid inputs" });
-            return;
-        }
-        let newBook = {
-            id: crypto.randomUUID(),
-            name: name.toString(),
-            price: price.toString(),
-            author: author.toString(),
-            isBooked: 0,
+    if (bookIndex == -1) {
+        return {
+            message: "The book with the provided id could not be found",
+            isOk: false,
+            code: 400,
         };
-        console.log(dbPath);
-        readFile(dbPath, (err, data) => {
-            if (err) {
-                reject({ message: "An error occurred while fetching data from the database" });
-                return;
-            }
-            let newData = JSON.parse(data);
-            if (!newData.books) newData.books = [];
-            newData.books.push(newBook);
-            writeFile(dbPath, JSON.stringify(newData), (err) => {
-                if (err) {
-                    reject({ message: "An error occurred while adding the book to the database" });
-                    return;
-                }
-                resolve({ message: "The book has been added to the database successfully" });
-            });
-        });
-    });
+    }
+
+    const db = await dbConnection();
+    const result = await db.collection("books").deleteOne({ id: Number(bookId) });
+
+    if (result.deletedCount) {
+        return { message: "Deleted :)", isOk: true, code: 200 };
+    }
+    return {
+        message: "There was an error while deleting the book, please try again ...",
+        isOk: false,
+        code: 504,
+    };
+};
+
+const addBook = async (bookData) => {
+    let { name, price, author } = bookData;
+    if (!name || (!price && price !== 0) || !author) {
+        return { message: "Invalid inputs", isOk: false, code: 400 };
+    }
+    const db = await dbConnection();
+    let lastBook = await db.collection("books").find({}).sort({ createdAt: -1 }).limit(1).toArray();
+
+    let lastIndex = lastBook[0]?.id;
+    lastIndex = !lastIndex && lastIndex != 0 ? 0 : lastIndex;
+    let newBook = {
+        id: lastIndex + 1,
+        name: name.toString(),
+        price: price.toString(),
+        author: author.toString(),
+        isBooked: 0,
+        createdAt: new Date(),
+    };
+
+    const result = await db.collection("books").insertOne(newBook);
+    if (result.insertedId) {
+        return {
+            message: "The book has been added to the database successfully",
+            isOk: true,
+            code: 201,
+        };
+    }
+
+    return {
+        message: "An error occurred while adding the book to the database",
+        isOk: false,
+        code: 504,
+    };
 };
 
 const editBook = (id, newData) => {

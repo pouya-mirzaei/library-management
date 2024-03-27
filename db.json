@@ -31,6 +31,14 @@
             "password": "nikita",
             "role": "USER",
             "fined": 0
+        },
+        {
+            "id": "4dc00d38-6548-4a92-87ba-604a7b9d7163",
+            "name": "executive_deposit.curl",
+            "username": "Monserrate84",
+            "password": "d0daiTn2s22yMvk",
+            "role": "USER",
+            "fined": 0
         }
     ],
     "books": [

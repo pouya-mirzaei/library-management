@@ -11,8 +11,6 @@ require("dotenv").config();
 
 const PORT = process.env.PORT || 3000;
 
-const dbPath = "./db.json";
-
 const server = http.createServer((req, res) => {
     let { url: reqUrl, method } = req;
     let fullUrl = new URL(reqUrl, `http://localhost:${process.env.PORT}`);
