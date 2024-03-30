@@ -26,7 +26,7 @@ const addBookToDb = (req, res) => {
     req.on("end", async () => {
         if (!body) {
             res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "give me some data bitch", isOk: false, code: 400 }));
+            res.end(JSON.stringify({ message: "give me some data bitch", ok: false, code: 400 }));
             return;
         }
         let data = JSON.parse(body);
@@ -47,25 +47,22 @@ const editController = (req, res) => {
         body += chunk;
     });
 
-    req.on("end", () => {
-        if (!body) {
+    req.on("end", async () => {
+        let data;
+        try {
+            data = JSON.parse(body);
+        } catch (err) {
             res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "give me some data bitch" }));
+            res.end(JSON.stringify({ message: "Invalid Json, fuck you bitch" }));
             return;
         }
-        let data = JSON.parse(body);
+
         let id = fullUrl.searchParams.get("id");
-        editBook(id, data)
-            .then((response) => {
-                res.writeHead(202, { "Content-Type": "application/json" });
-                res.write(JSON.stringify(response));
-                res.end();
-            })
-            .catch((err) => {
-                res.writeHead(504, { "Content-Type": "application/json" });
-                res.write(JSON.stringify(err));
-                res.end();
-            });
+        const result = await editBook(id, data);
+
+        res.writeHead(result.code, { "Content-Type": "application/json" });
+        res.write(JSON.stringify(result));
+        res.end();
     });
 };
 

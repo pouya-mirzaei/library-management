@@ -1,5 +1,6 @@
 const { readFile, writeFile } = require("fs");
 const { db: dbConnection } = require("../configs/db");
+const { ObjectId } = require("bson");
 
 require("dotenv").config();
 
@@ -11,7 +12,7 @@ const getAllBooks = async () => {
 };
 const deleteBook = async (bookId) => {
     if (!bookId) {
-        return { message: "You should pass an Id", isOk: false, code: 400 };
+        return { message: "You should pass an Id", ok: false, code: 400 };
     }
 
     let books = await getAllBooks();
@@ -21,7 +22,7 @@ const deleteBook = async (bookId) => {
     if (bookIndex == -1) {
         return {
             message: "The book with the provided id could not be found",
-            isOk: false,
+            ok: false,
             code: 400,
         };
     }
@@ -30,11 +31,11 @@ const deleteBook = async (bookId) => {
     const result = await db.collection("books").deleteOne({ id: Number(bookId) });
 
     if (result.deletedCount) {
-        return { message: "Deleted :)", isOk: true, code: 200 };
+        return { message: "Deleted :)", ok: true, code: 200 };
     }
     return {
         message: "There was an error while deleting the book, please try again ...",
-        isOk: false,
+        ok: false,
         code: 504,
     };
 };
@@ -42,7 +43,7 @@ const deleteBook = async (bookId) => {
 const addBook = async (bookData) => {
     let { name, price, author } = bookData;
     if (!name || (!price && price !== 0) || !author) {
-        return { message: "Invalid inputs", isOk: false, code: 400 };
+        return { message: "Invalid inputs", ok: false, code: 400 };
     }
     const db = await dbConnection();
     let lastBook = await db.collection("books").findOne({}, { sort: { createdAt: -1 } });
@@ -52,7 +53,7 @@ const addBook = async (bookData) => {
     let newBook = {
         id: lastIndex + 1,
         name: name.toString(),
-        price: price.toString(),
+        price,
         author: author.toString(),
         isBooked: 0,
         createdAt: new Date(),
@@ -62,56 +63,50 @@ const addBook = async (bookData) => {
     if (result.insertedId) {
         return {
             message: "The book has been added to the database successfully",
-            isOk: true,
+            ok: true,
             code: 201,
         };
     }
 
     return {
         message: "An error occurred while adding the book to the database",
-        isOk: false,
+        ok: false,
         code: 504,
     };
 };
 
-const editBook = (id, newData) => {
+const editBook = async (id, newData) => {
     let { name, price, author } = newData;
-    return new Promise((resolve, reject) => {
-        if (!name && !price && price !== 0 && !author) {
-            reject({ message: "Invalid inputs" });
-            return;
-        }
 
-        readFile(dbPath, (err, data) => {
-            if (err) {
-                reject({ message: "An error occurred while fetching data from the database" });
-                return;
-            }
+    if (!name && !price && price !== 0 && !author) {
+        return { message: "Invalid inputs", code: 400, ok: false };
+    }
 
-            let db = JSON.parse(data);
-            console.log(db);
-            let index = db.books.findIndex((item) => item.id === id);
+    const db = await dbConnection();
+    const bookCollection = db.collection("books");
 
-            if (index == -1) {
-                reject({ message: "There is no such a book with the provided id" });
-                return;
-            }
+    let book = await bookCollection.findOne({ id: Number(id) });
 
-            name = name ? name : db.books[index].name;
-            price = price || price == 0 ? price : db.books[index].price;
-            author = author ? author : db.books[index].author;
+    if (!book) {
+        return { message: "There is no such a book with the provided id", code: 404, ok: false };
+    }
 
-            db.books[index] = { ...db.books[index], name, price, author };
+    name = name ? name : book.name;
+    price = price || price == 0 ? price : book.price;
+    author = author ? author : book.author;
 
-            writeFile(dbPath, JSON.stringify(db), (err) => {
-                if (err) {
-                    reject({ message: "An error occurred while editing the book" });
-                    return;
-                }
-                resolve({ message: "The book has been edited successfully" });
-            });
-        });
-    });
+    book = { ...book, name, price, author };
+
+    const result = await bookCollection.updateOne(
+        { _id: new ObjectId(book._id) },
+        { $set: { ...book, updatedAt: new Date() } }
+    );
+
+    if (result.modifiedCount) {
+        return { message: "The book has been edited successfully", code: 202, ok: true };
+    }
+
+    return { message: "An error occurred while editing the book", code: 504, ok: false };
 };
 
 module.exports = {
