@@ -45,9 +45,9 @@ const addBook = async (bookData) => {
         return { message: "Invalid inputs", isOk: false, code: 400 };
     }
     const db = await dbConnection();
-    let lastBook = await db.collection("books").find({}).sort({ createdAt: -1 }).limit(1).toArray();
+    let lastBook = await db.collection("books").findOne({}, { sort: { createdAt: -1 } });
 
-    let lastIndex = lastBook[0]?.id;
+    let lastIndex = lastBook?.id;
     lastIndex = !lastIndex && lastIndex != 0 ? 0 : lastIndex;
     let newBook = {
         id: lastIndex + 1,
